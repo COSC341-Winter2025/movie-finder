@@ -90,6 +90,90 @@ This project will showcase Rust’s strengths in **web development, concurrency,
    ```
 
 ---
+## **Collaboration Guidelines**
+To ensure smooth development, all team members must follow these rules:
+
+### **Branching Strategy**
+- The **main** branch should always remain stable.
+- Each feature must be developed in a **separate branch**.
+- Branch naming convention:  
+  ```
+  feature/<feature-name>
+  fix/<bug-description>
+  ```
+  Example: `feature/movie-search`, `fix/api-timeout`
+
+### **Commit Guidelines**
+- Write **clear commit messages** following this format:  
+  ```
+  <type>: <short description>
+  
+  [Optional longer description]
+  ```
+  Example:  
+  ```
+  feat: add movie search functionality
+  
+  Implemented movie search by title, genre, and release year using OMDB API.
+  ```
+
+  **Commit Types:**
+  - `feat:` (new feature)
+  - `fix:` (bug fix)
+  - `docs:` (documentation updates)
+  - `style:` (formatting, no logic change)
+  - `refactor:` (code refactoring)
+  - `test:` (adding or modifying tests)
+
+---
+
+## **Pull Request (PR) Rules**
+- **Always create a PR** when merging into `main`.  
+- Assign at least **one reviewer** (another team member).  
+- **PR description must include:**
+  - What the feature/bug fix does
+  - Any dependencies required
+  - Screenshots (if applicable)
+- PRs should follow this format:
+  ```
+  ## Summary
+  - Short description of the changes.
+
+  ## Changes Made
+  - List key changes.
+
+  ## How to Test
+  - Steps to test the feature.
+
+  ## Related Issues
+  - Link to any related issues.
+  ```
+- **No direct pushes to `main`!**  
+
+---
+
+## **Code Review Process**
+- **Review each PR** before merging.  
+- Look for:
+  - Code quality & readability
+  - Adherence to Rust best practices
+  - Security concerns
+  - Functionality testing  
+- Use **GitHub comments** to discuss improvements.
+
+---
+
+
+## **Issue Tracking**
+- Bugs and feature requests should be logged under **GitHub Issues**.
+- Use appropriate labels: `bug`, `enhancement`, `documentation`, etc.
+- Each issue should include:
+  - **Title**: Short description of the problem.
+  - **Description**: Detailed explanation, steps to reproduce.
+  - **Expected Behavior**: What should happen?
+  - **Actual Behavior**: What’s happening instead?
+
+---
 
 ## **License**
 This project is licensed under the **MIT License**.
