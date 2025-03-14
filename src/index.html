@@ -16,6 +16,68 @@
     />
   </head>
   <body>
+    <div class="wrapper">
+      <!-- logo -->
+      <div class="logo">
+        <div class="container">
+          <p>Movie Finder</p>
+        </div>
+      </div>
+      <!--  end of logo -->
+      <!-- search container -->
+      <div class="search-container">
+        <div class="search-element">
+          <h3>Search Movies:</h3>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Search Movies..."
+            id="movie-search-box"
+          />
+          <div class="search-list" id="search-list">
+            <!-- search list items -->
+            <div class="search-list-item">
+              <div class="search-item-thumbnail">
+                <img src="poster.jpg" alt="poster" />
+              </div>
+              <div class="search-item-info">
+                <h3>Movie Title</h3>
+                <p>Year</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- end of search container -->
+      <!-- result container -->
+       <div class ="container">
+        <div class="result-container">
+          <div class="result-grid" id="result-grid">
+            <!-- movie infor here  -->
+             <div class="movie-poster">
+              <img src="poster.jpg" alt="poster" />
+      
+             </div>
+             <div class="movie-info">
+              <h3 class="movie-title">Movie Title</h3>
+              <ul class="movie-misc-info">
+                <li class="year">Year: </li>
+      
+                <li class="rated">Rating:</li>
+                <li class="released">Released:</li>
+              </ul>
+              <p class="genre"><b>Genre:</b></p>
+              <p class="writer"><b>Writer:</b></p>
+              <p class="actors"><b>Actors:</b></p>
+              <p class="plot"><b>Plot:</b></p>
+              <p class="language"><b>Language:</b></p>
+              <p class="awards"><b><i class="fas fa-award"></i>Awards:</b></p>
+
+             </div>
+          </div>
+        </div>
+       </div>
+      <!-- end of result container -->
+    </div>
     <!-- movie app js -->
     <script src="script.js"></script>
   </body>
