@@ -1,3 +1,8 @@
+use actix_web::{web, App, HttpServer, Responder, HttpResponse};
+use serde::{Deserialize, Serialize};
+use std::env;
+use reqwest;
+
 #[derive(Serialize, Deserialize)]
 struct Movie {
     title: String,
@@ -33,7 +38,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .route("/movies/{query}", web::get().to(search_movies))
     })
-    .bind("127.0.0.1:8080")?
+    .bind("127.0.0.1:5500")?
     .run()
     .await
 }
