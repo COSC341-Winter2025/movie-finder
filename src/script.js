@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const resultGrid = document.getElementById("result-grid");
 
   // Event listener for the search box
-  searchBox.addEventListener("keyup", async() => {
+  searchBox.addEventListener("keyup", async () => {
     let query = searchBox.value.trim();
     if (query.length > 2) {
       let response = await fetch(`/movies/${query}`);
@@ -11,7 +11,23 @@ document.addEventListener("DOMContentLoaded", () => {
       displayMovies(movies);
     }
   });
-});
 
-// Function to display movies in the result grid
-function 
+  // Function to display movies in the result grid
+  function displayMovies(movies) {
+    resultGrid.innerHTML = "";
+    movies.forEach((movie) => {
+      let movieCard = document.createElement("div");
+      movieCard.classList.add("movie-card");
+      movieCard.innerHTML = `
+      <div class="movie-poster">
+        <img src="${movie.poster}" alt="${movie.title}">
+      </div>
+      <div class="movie-info">
+        <h3>${movie.title}</h3>
+        <p><b>Year:</b> ${movie.year}</p>
+      </div>
+    `;
+      resultGrid.appendChild(movieCard);
+    });
+  }
+});
