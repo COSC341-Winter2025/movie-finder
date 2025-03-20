@@ -5,3 +5,9 @@ struct Movie {
     imdb_id: String,
     poster: String,
 }
+
+#[derive(Serialize, Deserialize)]
+struct MovieApiResponse{
+    Search: Vec<Movie>,
+    
+}
