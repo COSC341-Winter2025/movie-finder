@@ -13,6 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function findMovies() {
+    let searchTerm = movieSearchBox.value;
+    console.log(searchTerm);
+  }
+
   // Event listener for the search box
   searchBox.addEventListener("keyup", async () => {
     let query = searchBox.value.trim();
