@@ -1,4 +1,5 @@
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
+use actix_files::Files;
 use serde::{Deserialize, Serialize};
 use std::env;
 use reqwest;
@@ -23,6 +24,10 @@ struct MovieApiResponse{
     #[serde(rename = "Search")]
     search: Vec<Movie>,
     
+}
+
+async fn index() -> impl Responder {
+    HttpResponse::Ok().body("Welcome to the Movie Finder API! Use /movies/{query} to search.")
 }
 
 async fn search_movies(query: web::Path<String>) -> impl Responder {
@@ -56,7 +61,9 @@ async fn main() -> std::io::Result<()> {
     
     HttpServer::new(|| {
         App::new()
+            .route("/", web::get().to(index))  
             .route("/movies/{query}", web::get().to(search_movies))
+            .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?
     .run()
