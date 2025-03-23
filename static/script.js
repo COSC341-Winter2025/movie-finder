@@ -46,6 +46,21 @@ function displayMovieList(movies) {
     </div>`;
     searchList.appendChild(movieListItem);
   }
+  loadMovieDetails();
+}
+
+function loadMovieDetails() {
+  const searchListMovies = searchList.querySelectorAll(".search-list-item");
+  searchListMovies.forEach((movie) => {
+    movie.addEventListener("click", async () => {
+      //console.log(movie.dataset.id);
+      searchList.classList.add("hide-search-list");
+      movieSearchBox.value = "";
+      const res = await fetch(`/movie/${movie.dataset.id}`);
+      const data = await res.json();
+      console.log(data);
+    });
+  });
 }
 
 // Wait for DOM to be fully loaded before adding event listeners

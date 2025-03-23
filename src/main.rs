@@ -55,6 +55,21 @@ async fn search_movies(query: web::Path<String>) -> impl Responder {
         }
 }
 
+async fn get_movie_by_id(movie_id: web::Path<String>) -> impl Responder {
+    let api_key = env::var("MOVIE_API_KEY").expect("API key not found in .env");
+    let url = format!("http://www.omdbapi.com/?i={}&apikey={}", movie_id, api_key);
+
+    println!("Fetching movie details from: {}", url); // Log API call
+
+    match reqwest::get(&url).await {
+        Ok(response) => match response.json::<Movie>().await {
+            Ok(data) => HttpResponse::Ok().json(data),
+            Err(_) => HttpResponse::InternalServerError().body("Error parsing movie details"),
+        },
+        Err(_) => HttpResponse::InternalServerError().body("Error fetching movie details"),
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -64,6 +79,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .route("/", web::get().to(index))  
             .route("/movies/{query}", web::get().to(search_movies))
+            .route("/movie/{id}", web::get().to(get_movie_by_id))
             .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?
