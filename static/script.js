@@ -64,7 +64,32 @@ function loadMovieDetails() {
   });
 }
 
-function
+function displayMovieDetails(movie) {
+  resultGrid.innerHTML = `
+  <div class="movie-poster">
+              <img src="${
+                movie.Poster != "N/A" ? movie.Poster : "poster_not_found.jpg"
+              }"  alt="poster" />
+            </div>
+            <div class="movie-info">
+              <h3 class="movie-title">${movie.Title}</h3>
+              <ul class="movie-misc-info">
+                <li class="year">${movie.Year}</li>
+
+                <li class="rated">${movie.imdbRating}</li>
+                <li class="released">${movie.Released}</li>
+              </ul>
+              <p class="genre"><b>Genre: ${movie.Genre}</b></p>
+              <p class="writer"><b>Writer: ${movie.Writer}</b></p>
+              <p class="actors"><b>Actors: ${movie.Actors}</b></p>
+              <p class="plot"><b>Plot: ${movie.Plot}</b></p>
+              <p class="language"><b>Language: ${movie.Language}</b></p>
+              <p class="awards">
+                <b><i class="fas fa-award"></i>${movie.Awards}</b>
+              </p>
+            </div>
+            `;
+}
 
 // Wait for DOM to be fully loaded before adding event listeners
 document.addEventListener("DOMContentLoaded", function () {
