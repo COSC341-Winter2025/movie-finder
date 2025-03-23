@@ -58,6 +58,7 @@ async fn search_movies(query: web::Path<String>) -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
+    println!("Server is starting..."); 
     
     HttpServer::new(|| {
         App::new()

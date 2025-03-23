@@ -9,13 +9,42 @@ async function loadMovies(searchTerm) {
   const data = await res.json();
   console.log(data);
   if (data.Response === "True") {
-    displayMovies(data.Search);
+    displayMovieList(data.Search);
   }
 }
 
 function findMovies() {
   let searchTerm = movieSearchBox.value;
-  console.log(searchTerm);
+  if (searchTerm.length > 0) {
+    searchList.classList.remove("hide-search-list");
+    loadMovies(searchTerm);
+  } else {
+    searchList.classList.add("hide-search-list");
+  }
+}
+
+function displayMovieList(movies) {
+  searchList.innerHTML = "";
+  for (let idx = 0; idx < movies.length; idx++) {
+    let movieListItem = document.createElement("div");
+    movieListItem.dataset.imdbId = movies[idx].imdbID;
+    movieListItem.classList.add("search-list-item");
+    if (movies[idx].Poster !== "N/A") {
+      moviesPoster = movies[idx].Poster;
+    } else {
+      moviesPoster = "poster_not_found.jpg";
+    }
+    movieListItem.innerHTML = `
+    <div class="search-list-thumbnail">
+                <img src="${moviesPoster}" />
+              </div>
+              <div class="search-item-info">
+                <h3>${movies[idx].Title}</h3>
+                <p>${movies[idx].Year}</p>
+              </div>`;
+
+    searchList.appendChild(movieListItem);
+  }
 }
 
 // Wait for DOM to be fully loaded before adding event listeners
@@ -23,6 +52,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Add event listener for the search box
   movieSearchBox.addEventListener("keyup", findMovies);
 });
+
+// cmd+shift+r if the page is not refreshing
 
 // // Event listener for the search box
 // searchBox.addEventListener("keyup", async () => {
