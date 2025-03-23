@@ -119,13 +119,13 @@ async fn main() -> std::io::Result<()> {
     
     HttpServer::new(|| {
         App::new()
-                .wrap(Cors::permissive())
+                .wrap(Cors::default().allow_any_origin().allow_any_method().allow_any_header())
                 .route("/", web::get().to(|| async { actix_files::NamedFile::open("index.html") }))
                 .route("/movies/{movie_name}", web::get().to(search_movies))
                 .route("/movie/{id}", web::get().to(get_movie_by_id))
                 .service(Files::new("/", "./").index_file("index.html"))
     })
-    .bind("0.0.0.0:8080")?
+    .bind(("0.0.0.0", 8080))?
     .run()
     .await
 }
