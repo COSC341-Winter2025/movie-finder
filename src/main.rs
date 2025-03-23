@@ -116,6 +116,9 @@ async fn get_movie_by_id(movie_id: web::Path<String>) -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     println!("Server is starting..."); 
+
+    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let address = format!("0.0.0.0:{}", port);
     
     HttpServer::new(|| {
         App::new()
@@ -125,7 +128,7 @@ async fn main() -> std::io::Result<()> {
                 .route("/movie/{id}", web::get().to(get_movie_by_id))
                 .service(Files::new("/", "./").index_file("index.html"))
     })
-    .bind(("0.0.0.0", 8080))?
+    .bind(address)?
     .run()
     .await
 }
