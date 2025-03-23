@@ -8,8 +8,10 @@ async function loadMovies(searchTerm) {
   const res = await fetch(`/movies/${query}`);
   const data = await res.json();
   console.log(data);
-  if (data.Response === "True") {
-    displayMovieList(data.Search);
+  if (data.length > 0) {
+    displayMovieList(data);
+  } else {
+    searchList.innerHTML = "<p>No movies found.</p>";
   }
 }
 
@@ -27,22 +29,21 @@ function displayMovieList(movies) {
   searchList.innerHTML = "";
   for (let idx = 0; idx < movies.length; idx++) {
     let movieListItem = document.createElement("div");
-    movieListItem.dataset.imdbId = movies[idx].imdbID;
+    movieListItem.dataset.id = movies[idx].imdbID;
     movieListItem.classList.add("search-list-item");
-    if (movies[idx].Poster !== "N/A") {
-      moviesPoster = movies[idx].Poster;
+    if (movies[idx].Poster != "N/A") {
+      moviePoster = movies[idx].Poster;
     } else {
-      moviesPoster = "poster_not_found.jpg";
+      moviePoster = "poster_not_found.jpg";
     }
     movieListItem.innerHTML = `
     <div class="search-list-thumbnail">
-                <img src="${moviesPoster}" />
-              </div>
-              <div class="search-item-info">
-                <h3>${movies[idx].Title}</h3>
-                <p>${movies[idx].Year}</p>
-              </div>`;
-
+      <img src="${moviePoster}" />
+    </div>
+    <div class="search-item-info">
+      <h3>${movies[idx].Title}</h3>
+      <p>${movies[idx].Year}</p>
+    </div>`;
     searchList.appendChild(movieListItem);
   }
 }
