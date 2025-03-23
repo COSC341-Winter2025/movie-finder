@@ -176,11 +176,11 @@ To ensure smooth development, all team members must follow these rules:
 ---
 
 ## **Deployment**
-cargo build --release
+- cargo build --release.
 1️⃣ Backend Deployment (Railway)
-curl -fsSL https://railway.app/install.sh | sh
-railway login
-railway init
+- curl -fsSL https://railway.app/install.sh | sh.
+- railway login.
+- railway init.
 railway up
 In Railway Dashboard, go to Settings → Variables.
 Add your OMDb API key:
