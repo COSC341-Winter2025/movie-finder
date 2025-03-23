@@ -1,5 +1,7 @@
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use actix_files::Files;
+use actix_cors::Cors;
+
 use serde::{Deserialize, Serialize};
 use std::env;
 use reqwest;
@@ -117,6 +119,7 @@ async fn main() -> std::io::Result<()> {
     
     HttpServer::new(|| {
         App::new()
+                .wrap(Cors::permissive())
                 .route("/", web::get().to(|| async { actix_files::NamedFile::open("index.html") }))
                 .route("/movies/{movie_name}", web::get().to(search_movies))
                 .route("/movie/{id}", web::get().to(get_movie_by_id))

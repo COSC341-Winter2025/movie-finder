@@ -2,10 +2,12 @@ const movieSearchBox = document.getElementById("movie-search-box");
 const searchList = document.getElementById("search-list");
 const resultGrid = document.getElementById("result-grid");
 
+const API_BASE_URL = "https://movie-finder-production-ad94.up.railway.app";
+
 // load movies from API
 async function loadMovies(searchTerm) {
   const query = searchTerm.trim();
-  const res = await fetch(`/movies/${query}`);
+  const res = await fetch(`${API_BASE_URL}/movies/${query}`);
   const data = await res.json();
   console.log(data);
   if (data.length > 0) {
@@ -56,7 +58,7 @@ function loadMovieDetails() {
       //console.log(movie.dataset.id);
       searchList.classList.add("hide-search-list");
       movieSearchBox.value = "";
-      const res = await fetch(`/movie/${movie.dataset.id}`);
+      const res = await fetch(`${API_BASE_URL}/movie/${movie.dataset.id}`);
       const data = await res.json();
       //console.log(data);
       displayMovieDetails(data);
