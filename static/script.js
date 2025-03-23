@@ -58,10 +58,13 @@ function loadMovieDetails() {
       movieSearchBox.value = "";
       const res = await fetch(`/movie/${movie.dataset.id}`);
       const data = await res.json();
-      console.log(data);
+      //console.log(data);
+      displayMovieDetails(data);
     });
   });
 }
+
+function
 
 // Wait for DOM to be fully loaded before adding event listeners
 document.addEventListener("DOMContentLoaded", function () {
