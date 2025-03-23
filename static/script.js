@@ -2,7 +2,7 @@ const movieSearchBox = document.getElementById("movie-search-box");
 const searchList = document.getElementById("search-list");
 const resultGrid = document.getElementById("result-grid");
 
-const API_BASE_URL = "https://movie-finder-production-ad94.up.railway.app";
+const API_BASE_URL = "http://movie-finder-production-df08.up.railway.app/";
 
 // load movies from API
 async function loadMovies(searchTerm) {

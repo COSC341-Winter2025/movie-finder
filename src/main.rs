@@ -125,7 +125,7 @@ async fn main() -> std::io::Result<()> {
                 .route("/movie/{id}", web::get().to(get_movie_by_id))
                 .service(Files::new("/", "./").index_file("index.html"))
     })
-    .bind("127.0.0.1:5500")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
