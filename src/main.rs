@@ -117,10 +117,10 @@ async fn main() -> std::io::Result<()> {
     
     HttpServer::new(|| {
         App::new()
-            .route("/", web::get().to(index))  
-            .route("/movies/{movie_name}", web::get().to(search_movies))
-            .route("/movie/{id}", web::get().to(get_movie_by_id))
-            .service(Files::new("/static", "./static").show_files_listing())
+                .route("/", web::get().to(|| async { actix_files::NamedFile::open("index.html") }))
+                .route("/movies/{movie_name}", web::get().to(search_movies))
+                .route("/movie/{id}", web::get().to(get_movie_by_id))
+                .service(Files::new("/", "./").index_file("index.html"))
     })
     .bind("127.0.0.1:5500")?
     .run()
