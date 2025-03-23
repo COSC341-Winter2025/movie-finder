@@ -74,10 +74,10 @@ function displayMovieDetails(movie) {
             <div class="movie-info">
               <h3 class="movie-title">${movie.Title}</h3>
               <ul class="movie-misc-info">
-                <li class="year">${movie.Year}</li>
+                <li class="year">Year: ${movie.Year}</li>
 
-                <li class="rated">${movie.imdbRating}</li>
-                <li class="released">${movie.Released}</li>
+                <li class="rated">Rating: ${movie.imdbRating}</li>
+                <li class="released">Released: ${movie.Released}</li>
               </ul>
               <p class="genre"><b>Genre: ${movie.Genre}</b></p>
               <p class="writer"><b>Writer: ${movie.Writer}</b></p>
