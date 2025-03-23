@@ -177,18 +177,18 @@ To ensure smooth development, all team members must follow these rules:
 
 ## **Deployment**
 - cargo build --release.
-1️⃣ Backend Deployment (Railway)
+- 1️⃣ Backend Deployment (Railway)
 - curl -fsSL https://railway.app/install.sh | sh.
 - railway login.
 - railway init.
-railway up
-In Railway Dashboard, go to Settings → Variables.
-Add your OMDb API key:
-2️⃣ Frontend Deployment (Netlify)
-const API_BASE_URL = "https://your-app.up.railway.app";
-git add .
-git commit -m "Update API URL"
-git push origin main
+- railway up.
+- In Railway Dashboard, go to Settings → Variables.
+- Add your OMDb API key:
+- 2️⃣ Frontend Deployment (Netlify)
+- const API_BASE_URL = "https://your-app.up.railway.app";
+- git add .
+- git commit -m "Update API URL"
+- git push origin main
 
 ---
 
