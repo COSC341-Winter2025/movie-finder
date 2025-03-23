@@ -27,12 +27,13 @@ struct MovieApiResponse{
 }
 
 async fn index() -> impl Responder {
-    HttpResponse::Ok().body("Welcome to the Movie Finder API! Use /movies/{query} to search.")
+    HttpResponse::Ok().body("Welcome to the Movie Finder API! Use /movies/{movie_name} to search by movie name or Use /movie/{movie_id} to search by movie by movie id.")
+
 }
 
-async fn search_movies(query: web::Path<String>) -> impl Responder {
+async fn search_movies(movie_name: web::Path<String>) -> impl Responder {
     let api_key = env::var("MOVIE_API_KEY").expect("API key not found in .env");
-    let url = format!("http://www.omdbapi.com/?s={}&apikey={}", query, api_key);
+    let url = format!("http://www.omdbapi.com/?s={}&apikey={}", movie_name, api_key);
 
     println!("Fetching movies from: {}", url); // Log API call
 
@@ -117,7 +118,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(index))  
-            .route("/movies/{query}", web::get().to(search_movies))
+            .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .service(Files::new("/static", "./static").show_files_listing())
     })
