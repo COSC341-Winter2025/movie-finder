@@ -241,6 +241,16 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
     HttpResponse::Unauthorized().body("Authorization header missing or malformed")
 }
 
+fn verify_token(token: &str, secret: &str) -> Option<Claims> {
+    decode::<Claims>(
+        token,
+        &DecodingKey::from_secret(secret.as_bytes()),
+        &Validation::default(),
+    )
+    .map(|data| data.claims)
+    .ok()
+}
+
 
 
 #[actix_web::main]
@@ -268,7 +278,7 @@ async fn main() -> std::io::Result<()> {
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
             .route("/protected", web::get().to(protected))
-            .service(Files::new("/static", "./static").show_files_listing())
+            // .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?
     .run()
