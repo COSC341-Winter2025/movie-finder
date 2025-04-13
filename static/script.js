@@ -97,6 +97,35 @@ document.addEventListener("DOMContentLoaded", function () {
   movieSearchBox.addEventListener("keyup", findMovies);
 });
 
+if (localStorage.getItem("token")) {
+  document.getElementById("fav-btn").style.display = "inline-block";
+}
+
+function saveToFavorites() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("You must be logged in to save favorites.");
+    return;
+  }
+
+  const movie = currentMovie; // wherever you store selected movie info
+  fetch("/api/add-favorite", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token,
+    },
+    body: JSON.stringify({
+      imdb_id: movie.imdbID,
+      title: movie.Title,
+      year: movie.Year,
+      poster: movie.Poster,
+    }),
+  })
+    .then((res) => res.text())
+    .then((msg) => alert(msg));
+}
+
 // cmd+shift+r if the page is not refreshing
 
 // // Event listener for the search box

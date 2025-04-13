@@ -23,14 +23,13 @@
           <p>Movie <span>Finder</span></p>
         </div>
       </div>
-      <p id="username-display" style="text-align: center; margin: 10px 0">
+      <!-- <p id="username-display" style="text-align: center; margin: 10px 0">
         Loading username...
       </p>
-
       <div style="text-align: center; margin-top: 30px">
         <button onclick="goBackToDashboard()">Back to Dashboard</button>
         <button onclick="logout()">Logout</button>
-      </div>
+      </div> -->
 
       <!--  end of logo -->
       <!-- navbar -->
@@ -94,10 +93,9 @@
       ❤️ Save to Favorites
     </button>
 
-    <script src="/static/script.js"></script>
-    <script>
+    <script src="script.js"></script>
+    <!-- <script>
       const token = localStorage.getItem("token");
-      console.log("Token used for /protected:", token);
 
       if (!token) {
         window.location.href = "/static/login.html";
@@ -108,15 +106,13 @@
           },
         })
           .then((res) => {
-            console.log("Protected response status:", res.status);
             if (!res.ok) {
-              window.location.href = "/protected/unauthorized.html";
+              window.location.href = "/static/login.html";
             } else {
               return res.text();
             }
           })
           .then((username) => {
-            console.log("Logged in as:", username);
             document.getElementById(
               "username-display"
             ).innerText = `Welcome, ${username}!`;
@@ -127,6 +123,6 @@
         localStorage.removeItem("token");
         window.location.href = "/static/login.html";
       }
-    </script>
+    </script> -->
   </body>
 </html>

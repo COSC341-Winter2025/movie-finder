@@ -12,6 +12,8 @@ use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation}
 use chrono::{Utc, Duration};
 use actix_files::NamedFile;
 use std::path::PathBuf;
+use actix_web::HttpRequest;
+use actix_web::get;
 
 // JWT secret key
 #[derive(Debug, Serialize, Deserialize)]
@@ -221,6 +223,7 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
 
     if let Some(auth_value) = auth_header {
         if let Ok(auth_str) = auth_value.to_str() {
+            println!("Received Authorization header: {}", auth_str);
             if auth_str.starts_with("Bearer ") {
                 let token = &auth_str[7..];
                 let result = decode::<Claims>(
@@ -231,8 +234,9 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
 
                 match result {
                     Ok(token_data) => {
+                        println!("✅ Valid token for {}", token_data.claims.sub);
                         return HttpResponse::Ok()
-                            .body(format!("Hello, {}!", token_data.claims.sub));
+                        .body(token_data.claims.sub.clone());
                     }
                     Err(_) => return HttpResponse::Unauthorized().body("Invalid token"),
                 }
@@ -242,6 +246,38 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
 
     HttpResponse::Unauthorized().body("Authorization header missing or malformed")
 }
+
+#[get("/protected")]
+async fn protected_api(req: HttpRequest) -> impl Responder {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    if let Some(auth_value) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_value.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                let result = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                match result {
+                    Ok(token_data) => {
+                        println!("✅ Token valid in /protected API: {}", token_data.claims.sub);
+                        return HttpResponse::Ok().body(token_data.claims.sub.clone());
+                    }
+                    Err(err) => {
+                        println!("❌ Invalid token in /protected: {:?}", err);
+                        return HttpResponse::Unauthorized().body("Invalid token");
+                    }
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Authorization header missing or malformed")
+}
+
 
 fn verify_token(token: &str, secret: &str) -> Option<Claims> {
     decode::<Claims>(
@@ -278,6 +314,131 @@ async fn dashboard(req: actix_web::HttpRequest) -> actix_web::Result<NamedFile> 
     Ok(NamedFile::open(path)?)
 }
 
+#[derive(Serialize)]
+struct Favorite {
+    imdb_id: String,
+    title: Option<String>,
+    year: Option<String>,
+    poster: Option<String>,
+}
+
+async fn get_favorites(req: HttpRequest, db: web::Data<MySqlPool>) -> impl Responder {
+    let jwt_secret = env::var("JWT_SECRET").unwrap();
+
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                if let Ok(token_data) = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                ) {
+                    let username = token_data.claims.sub;
+
+                    // get user_id from username
+                    let user = sqlx::query!(
+                        "SELECT id FROM users WHERE username = ?",
+                        username
+                    )
+                    .fetch_one(db.get_ref())
+                    .await
+                    .unwrap();
+
+                    let favorites = sqlx::query_as!(
+                        Favorite,
+                        "SELECT imdb_id, title, year, poster FROM favorites WHERE user_id = ?",
+                        user.id
+                    )
+                    .fetch_all(db.get_ref())
+                    .await
+                    .unwrap();
+
+                    return HttpResponse::Ok().json(favorites);
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Invalid or missing token")
+}
+
+#[derive(Deserialize)]
+struct FavoriteData {
+    imdb_id: String,
+    title: String,
+    year: String,
+    poster: String,
+}
+
+async fn add_favorite(
+    req: HttpRequest,
+    data: web::Json<FavoriteData>,
+    db: web::Data<MySqlPool>,
+) -> impl Responder {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    // ✅ Extract and verify token
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+
+                let token_data = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                match token_data {
+                    Ok(claims) => {
+                        let username = claims.claims.sub;
+
+                        // ✅ Look up user_id
+                        let user = sqlx::query!(
+                            "SELECT id FROM users WHERE username = ?",
+                            username
+                        )
+                        .fetch_one(db.get_ref())
+                        .await;
+
+                        if let Ok(user) = user {
+                            // ✅ Insert favorite movie
+                            let insert_result = sqlx::query!(
+                                "INSERT IGNORE INTO favorites (user_id, imdb_id, title, year, poster) VALUES (?, ?, ?, ?, ?)",
+                                user.id,
+                                data.imdb_id,
+                                data.title,
+                                data.year,
+                                data.poster
+                            )
+                            .execute(db.get_ref())
+                            .await;
+
+                            match insert_result {
+                                Ok(_) => HttpResponse::Ok().body("✅ Movie added to favorites"),
+                                Err(e) => {
+                                    println!("DB error on insert: {:?}", e);
+                                    HttpResponse::InternalServerError().body("❌ Failed to save favorite")
+                                }
+                            }
+                        } else {
+                            HttpResponse::Unauthorized().body("User not found")
+                        }
+                    }
+                    Err(_) => HttpResponse::Unauthorized().body("Invalid token"),
+                }
+            } else {
+                HttpResponse::Unauthorized().body("Malformed Authorization header")
+            }
+        } else {
+            HttpResponse::Unauthorized().body("Invalid header string")
+        }
+    } else {
+        HttpResponse::Unauthorized().body("Missing Authorization header")
+    }
+}
+
 
 
 #[actix_web::main]
@@ -299,13 +460,22 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .route("/", web::get().to(index))  
+            //.route("/", web::get().to(index))  
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
-            .route("/dashboard", web::get().to(dashboard))
+            //.route("/dashboard", web::get().to(dashboard))
+            .route("/dashboard", web::get().to(|| async {
+                NamedFile::open("./protected/index.html")
+            }))
+            .route("/api/favorites", web::get().to(get_favorites))
+            .route("/api/add-favorite", web::post().to(add_favorite))
             .service(Files::new("/static", "./static").show_files_listing())
+            .service(protected_api)
+            .route("/", web::get().to(|| async {
+                NamedFile::open("./static/index.html")
+            }))
             
     })
     .bind("127.0.0.1:5500")?
