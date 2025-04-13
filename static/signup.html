@@ -47,8 +47,14 @@
           body: JSON.stringify({ username, email, password }),
         });
 
-        const data = await response.json();
-        document.getElementById("signup-message").innerText = data.message;
+        const msg = document.getElementById("signup-message");
+        if (response.ok) {
+          msg.textContent = "Signup successful!";
+          msg.style.color = "green";
+        } else {
+          msg.textContent = "Signup failed.";
+          msg.style.color = "red";
+        }
       });
   </script>
 </html>

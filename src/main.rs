@@ -7,7 +7,16 @@ use sqlx::mysql::MySqlPoolOptions;
 use sqlx::MySqlPool;
 use dotenv::dotenv;
 use bcrypt::{hash, DEFAULT_COST};
+use bcrypt::verify;
+use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation};
+use chrono::{Utc, Duration};
 
+// JWT secret key
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    exp: usize,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 struct MovieSearchResult {
@@ -146,6 +155,94 @@ async fn signup(
     }
 }
 
+#[derive(Deserialize)]
+struct LoginData {
+    username: String,
+    password: String,
+}
+
+async fn login(
+    pool: web::Data<MySqlPool>,
+    form: web::Json<LoginData>,
+) -> HttpResponse {
+    let result = sqlx::query!(
+        "SELECT password FROM users WHERE username = ?",
+        form.username
+    )
+    .fetch_one(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(row) => {
+            let is_valid = verify(&form.password, &row.password).unwrap_or(false);
+
+            if is_valid {
+                let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set in .env");
+
+                let expiration = Utc::now()
+                    .checked_add_signed(Duration::days(1))
+                    .expect("valid timestamp")
+                    .timestamp() as usize;
+
+                let claims = Claims {
+                    sub: form.username.clone(),
+                    exp: expiration,
+                };
+
+                let token = encode(
+                    &Header::default(),
+                    &claims,
+                    &EncodingKey::from_secret(jwt_secret.as_bytes()),
+                )
+                .expect("Failed to encode JWT");
+
+                HttpResponse::Ok().body(token)
+            } else{
+                HttpResponse::Unauthorized().body("Invalid password")
+            }
+        }
+        Err(sqlx::Error::RowNotFound) => {
+            println!("User not found");
+            HttpResponse::Unauthorized().body("User not found")
+        }
+        Err(e) => {
+            println!("DB error: {:?}", e);
+            HttpResponse::InternalServerError().body("Login failed")
+        }
+    }
+}
+
+async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    let auth_header = req.headers().get("Authorization");
+
+    if let Some(auth_value) = auth_header {
+        if let Ok(auth_str) = auth_value.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                let result = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                match result {
+                    Ok(token_data) => {
+                        return HttpResponse::Ok()
+                            .body(format!("Hello, {}!", token_data.claims.sub));
+                    }
+                    Err(_) => return HttpResponse::Unauthorized().body("Invalid token"),
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Authorization header missing or malformed")
+}
+
+
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -169,6 +266,8 @@ async fn main() -> std::io::Result<()> {
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
+            .route("/login", web::post().to(login))
+            .route("/protected", web::get().to(protected))
             .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?

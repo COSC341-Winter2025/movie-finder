@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <!-- movie app css -->
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <h2>Login</h2>
+    <form id="login-form">
+      <label for="username">Username:</label>
+      <input type="text" id="username" required />
+      <label for="password">Password:</label>
+      <input type="password" id="password" required />
+      <button id="submit">Login</button>
+    </form>
+    <p id="login-message"></p>
+    <script>
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const msg = document.getElementById("login-message");
+          const text = await response.text();
+          msg.textContent = response.ok ? "Login successful!" : text;
+          msg.style.color = response.ok ? "green" : "red";
+          if (response.ok) {
+            localStorage.setItem("token", text);
+          }
+        });
+    </script>
+  </body>
+</html>
