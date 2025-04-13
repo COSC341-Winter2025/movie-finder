@@ -7,6 +7,7 @@ use sqlx::mysql::MySqlPoolOptions;
 use dotenv::dotenv;
 use std::env;
 
+
 #[derive(Serialize, Deserialize, Debug)]
 struct MovieSearchResult {
     #[serde(rename = "Title")]
@@ -128,5 +129,20 @@ async fn main() -> std::io::Result<()> {
     .bind("127.0.0.1:5500")?
     .run()
     .await
+}
+
+#[tokio::main]
+async fn main() -> Result<(), sqlx::Error> {
+    dotenv().ok(); // loads .env
+
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set in .env");
+
+    let pool = MySqlPoolOptions::new()
+        .connect(&database_url)
+        .await?;
+
+    println!("Connected to MySQL!");
+    Ok(())
 }
 
