@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use reqwest;
 use sqlx::mysql::MySqlPoolOptions;
+use sqlx::MySqlPool;
 use dotenv::dotenv;
+use bcrypt::{hash, DEFAULT_COST};
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -113,6 +115,37 @@ async fn get_movie_by_id(movie_id: web::Path<String>) -> impl Responder {
     }
 }
 
+#[derive(Deserialize)]
+struct SignupData {
+    username: String,
+    email: String,
+    password: String,
+}
+
+async fn signup(
+    pool: web::Data<MySqlPool>,
+    form: web::Json<SignupData>,
+) -> HttpResponse {
+    // Hash the password
+    let hashed_password = match hash(&form.password, DEFAULT_COST) {
+        Ok(hash) => hash,
+        Err(_) => return HttpResponse::InternalServerError().body("Error hashing password"),
+    };
+
+    let result = sqlx::query!(
+        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+        form.username,
+        form.email,
+        hashed_password
+    )
+    .execute(pool.get_ref())
+    .await;
+    match result {
+        Ok(_) => HttpResponse::Ok().body("Signup success"),
+        Err(_) => HttpResponse::InternalServerError().body("Error creating user"),
+    }
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -135,6 +168,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(index))  
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
+            .route("/signup", web::post().to(signup))
             .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?
