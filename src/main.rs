@@ -278,6 +278,13 @@ async fn dashboard(req: actix_web::HttpRequest) -> actix_web::Result<NamedFile> 
     Ok(NamedFile::open(path)?)
 }
 
+#[derive(Serialize)]
+struct Favorite {
+    imdb_id: String,
+    title: String,
+    year: String,
+    poster: String,
+}
 
 
 #[actix_web::main]
