@@ -3,8 +3,10 @@ use actix_files::Files;
 use serde::{Deserialize, Serialize};
 use std::env;
 use reqwest;
-use sqlx::mysql::MySqlPoolOptions::MySqlPool;
+use sqlx::mysql::MySqlPoolOptions;
+use sqlx::MySqlPool;
 use dotenv::dotenv;
+use bcrypt::{hash, DEFAULT_COST};
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -124,11 +126,17 @@ async fn signup(
     pool: web::Data<MySqlPool>,
     form: web::Json<SignupData>,
 ) -> HttpResponse {
+    // Hash the password
+    let hashed_password = match hash(&form.password, DEFAULT_COST) {
+        Ok(hash) => hash,
+        Err(_) => return HttpResponse::InternalServerError().body("Error hashing password"),
+    };
+
     let result = sqlx::query!(
         "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
         form.username,
         form.email,
-        form.password
+        hashed_password
     )
     .execute(pool.get_ref())
     .await;
