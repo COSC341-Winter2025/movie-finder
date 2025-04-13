@@ -173,7 +173,7 @@ async fn login(
     .await;
 
     match result {
-        Ok(Some(row)) => {
+        Ok(row) => {
             let is_valid = verify(&form.password, &row.password).unwrap_or(false);
 
             if is_valid {
@@ -201,7 +201,10 @@ async fn login(
                 HttpResponse::Unauthorized().body("Invalid password")
             }
         }
-        Ok(None) => HttpResponse::Unauthorized().body("User not found"),
+        Err(sqlx::Error::RowNotFound) => {
+            println!("User not found");
+            HttpResponse::Unauthorized().body("User not found")
+        }
         Err(e) => {
             println!("DB error: {:?}", e);
             HttpResponse::InternalServerError().body("Login failed")
