@@ -3,6 +3,9 @@ use actix_files::Files;
 use serde::{Deserialize, Serialize};
 use std::env;
 use reqwest;
+use sqlx::mysql::MySqlPoolOptions;
+use dotenv::dotenv;
+use std::env;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct MovieSearchResult {
