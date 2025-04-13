@@ -327,6 +327,83 @@ async fn get_favorites(req: HttpRequest, db: web::Data<MySqlPool>) -> impl Respo
     HttpResponse::Unauthorized().body("Invalid or missing token")
 }
 
+#[derive(Deserialize)]
+struct FavoriteData {
+    imdb_id: String,
+    title: String,
+    year: String,
+    poster: String,
+}
+
+async fn add_favorite(
+    req: HttpRequest,
+    data: web::Json<FavoriteData>,
+    db: web::Data<MySqlPool>,
+) -> impl Responder {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    // ✅ Extract and verify token
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+
+                let token_data = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                match token_data {
+                    Ok(claims) => {
+                        let username = claims.claims.sub;
+
+                        // ✅ Look up user_id
+                        let user = sqlx::query!(
+                            "SELECT id FROM users WHERE username = ?",
+                            username
+                        )
+                        .fetch_one(db.get_ref())
+                        .await;
+
+                        if let Ok(user) = user {
+                            // ✅ Insert favorite movie
+                            let insert_result = sqlx::query!(
+                                "INSERT IGNORE INTO favorites (user_id, imdb_id, title, year, poster) VALUES (?, ?, ?, ?, ?)",
+                                user.id,
+                                data.imdb_id,
+                                data.title,
+                                data.year,
+                                data.poster
+                            )
+                            .execute(db.get_ref())
+                            .await;
+
+                            match insert_result {
+                                Ok(_) => HttpResponse::Ok().body("✅ Movie added to favorites"),
+                                Err(e) => {
+                                    println!("DB error on insert: {:?}", e);
+                                    HttpResponse::InternalServerError().body("❌ Failed to save favorite")
+                                }
+                            }
+                        } else {
+                            HttpResponse::Unauthorized().body("User not found")
+                        }
+                    }
+                    Err(_) => HttpResponse::Unauthorized().body("Invalid token"),
+                }
+            } else {
+                HttpResponse::Unauthorized().body("Malformed Authorization header")
+            }
+        } else {
+            HttpResponse::Unauthorized().body("Invalid header string")
+        }
+    } else {
+        HttpResponse::Unauthorized().body("Missing Authorization header")
+    }
+}
+
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -353,6 +430,7 @@ async fn main() -> std::io::Result<()> {
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
             .route("/dashboard", web::get().to(dashboard))
+            .route("/api/favorites", web::get().to(get_favorites))
             .service(Files::new("/static", "./static").show_files_listing())
             
     })
