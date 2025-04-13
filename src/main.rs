@@ -5,7 +5,6 @@ use std::env;
 use reqwest;
 use sqlx::mysql::MySqlPoolOptions;
 use dotenv::dotenv;
-use std::env;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -116,7 +115,7 @@ async fn get_movie_by_id(movie_id: web::Path<String>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv::dotenv().ok();
+    dotenv().ok();
     println!("Server is starting..."); 
 
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set in .env");
@@ -130,8 +129,9 @@ async fn main() -> std::io::Result<()> {
     println!("✅ Connected to MySQL");
 
     
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
+            .app_data(web::Data::new(pool.clone()))
             .route("/", web::get().to(index))  
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
