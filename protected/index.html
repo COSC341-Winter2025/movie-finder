@@ -23,13 +23,14 @@
           <p>Movie <span>Finder</span></p>
         </div>
       </div>
-      <!-- <p id="username-display" style="text-align: center; margin: 10px 0">
+      <p id="username-display" style="text-align: center; margin: 10px 0">
         Loading username...
       </p>
+
       <div style="text-align: center; margin-top: 30px">
         <button onclick="goBackToDashboard()">Back to Dashboard</button>
         <button onclick="logout()">Logout</button>
-      </div> -->
+      </div>
 
       <!--  end of logo -->
       <!-- navbar -->
@@ -93,8 +94,8 @@
       ❤️ Save to Favorites
     </button>
 
-    <script src="script.js"></script>
-    <!-- <script>
+    <script src="./static/script.js"></script>
+    <script>
       const token = localStorage.getItem("token");
 
       if (!token) {
@@ -107,7 +108,7 @@
         })
           .then((res) => {
             if (!res.ok) {
-              window.location.href = "/static/login.html";
+              window.location.href = "/protected/unauthorized.html";
             } else {
               return res.text();
             }
@@ -123,6 +124,6 @@
         localStorage.removeItem("token");
         window.location.href = "/static/login.html";
       }
-    </script> -->
+    </script>
   </body>
 </html>

@@ -12,6 +12,7 @@ use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation}
 use chrono::{Utc, Duration};
 use actix_files::NamedFile;
 use std::path::PathBuf;
+use actix_web::HttpRequest;
 
 // JWT secret key
 #[derive(Debug, Serialize, Deserialize)]
@@ -281,9 +282,9 @@ async fn dashboard(req: actix_web::HttpRequest) -> actix_web::Result<NamedFile> 
 #[derive(Serialize)]
 struct Favorite {
     imdb_id: String,
-    title: String,
-    year: String,
-    poster: String,
+    title: Option<String>,
+    year: Option<String>,
+    poster: Option<String>,
 }
 
 async fn get_favorites(req: HttpRequest, db: web::Data<MySqlPool>) -> impl Responder {
@@ -424,14 +425,21 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            .route("/", web::get().to(index))  
+            //.route("/", web::get().to(index))  
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
-            .route("/dashboard", web::get().to(dashboard))
+            //.route("/dashboard", web::get().to(dashboard))
+            .route("/dashboard", web::get().to(|| async {
+                NamedFile::open("./protected/index.html")
+            }))
             .route("/api/favorites", web::get().to(get_favorites))
+            .route("/api/add-favorite", web::post().to(add_favorite))
             .service(Files::new("/static", "./static").show_files_listing())
+            .route("/", web::get().to(|| async {
+                NamedFile::open("./static/index.html")
+            }))
             
     })
     .bind("127.0.0.1:5500")?
