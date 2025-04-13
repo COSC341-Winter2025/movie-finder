@@ -35,8 +35,11 @@
 
           const msg = document.getElementById("login-message");
           const text = await response.text();
-          msg.textContent = text;
+          msg.textContent = response.ok ? "Login successful!" : text;
           msg.style.color = response.ok ? "green" : "red";
+          if (response.ok) {
+            localStorage.setItem("token", text);
+          }
         });
     </script>
   </body>

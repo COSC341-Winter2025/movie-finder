@@ -173,14 +173,39 @@ async fn login(
     .await;
 
     match result {
-        Ok(row) => {
-            if verify(&form.password, &row.password).unwrap() {
-                HttpResponse::Ok().body("Login success")
-            } else {
-                HttpResponse::Unauthorized().body("Invalid credentials")
+        Ok(Some(row)) => {
+            let is_valid = verify(&form.password, &row.password).unwrap_or(false);
+
+            if is_valid {
+                let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set in .env");
+
+                let expiration = Utc::now()
+                    .checked_add_signed(Duration::days(1))
+                    .expect("valid timestamp")
+                    .timestamp() as usize;
+
+                let claims = Claims {
+                    sub: form.username.clone(),
+                    exp: expiration,
+                };
+
+                let token = encode(
+                    &Header::default(),
+                    &claims,
+                    &EncodingKey::from_secret(jwt_secret.as_bytes()),
+                )
+                .expect("Failed to encode JWT");
+
+                HttpResponse::Ok().body(token)
+            } else{
+                HttpResponse::Unauthorized().body("Invalid password")
             }
         }
-        Err(_) => HttpResponse::InternalServerError().body("Error fetching user"),
+        Ok(None) => HttpResponse::Unauthorized().body("User not found"),
+        Err(e) => {
+            println!("DB error: {:?}", e);
+            HttpResponse::InternalServerError().body("Login failed")
+        }
     }
 }
 
