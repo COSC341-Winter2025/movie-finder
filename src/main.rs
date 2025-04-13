@@ -209,6 +209,36 @@ async fn login(
     }
 }
 
+async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    let auth_header = req.headers().get("Authorization");
+
+    if let Some(auth_value) = auth_header {
+        if let Ok(auth_str) = auth_value.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                let result = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                match result {
+                    Ok(token_data) => {
+                        return HttpResponse::Ok()
+                            .body(format!("Hello, {}!", token_data.claims.sub));
+                    }
+                    Err(_) => return HttpResponse::Unauthorized().body("Invalid token"),
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Authorization header missing or malformed")
+}
+
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -234,6 +264,7 @@ async fn main() -> std::io::Result<()> {
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
+            .route("/protected", web::get().to(protected))
             .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?
