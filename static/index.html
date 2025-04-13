@@ -23,6 +23,13 @@
           <p>Movie <span>Finder</span></p>
         </div>
       </div>
+      <p id="username-display" style="text-align: center; margin: 10px 0">
+        Loading username...
+      </p>
+      <div style="text-align: center; margin-top: 30px">
+        <button onclick="goBackToDashboard()">Back to Dashboard</button>
+        <button onclick="logout()">Logout</button>
+      </div>
 
       <!--  end of logo -->
       <!-- navbar -->
@@ -84,5 +91,35 @@
     <!-- movie app js -->
 
     <script src="script.js"></script>
+    <script>
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        window.location.href = "/static/login.html";
+      } else {
+        fetch("/protected", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        })
+          .then((res) => {
+            if (!res.ok) {
+              window.location.href = "/static/login.html";
+            } else {
+              return res.text();
+            }
+          })
+          .then((username) => {
+            document.getElementById(
+              "username-display"
+            ).innerText = `Welcome, ${username}!`;
+          });
+      }
+
+      function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/static/login.html";
+      }
+    </script>
   </body>
 </html>

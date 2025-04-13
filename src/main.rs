@@ -232,7 +232,7 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
                 match result {
                     Ok(token_data) => {
                         return HttpResponse::Ok()
-                            .body(format!("Hello, {}!", token_data.claims.sub));
+                        .body(token_data.claims.sub.clone());
                     }
                     Err(_) => return HttpResponse::Unauthorized().body("Invalid token"),
                 }

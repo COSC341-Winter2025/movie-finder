@@ -41,7 +41,7 @@
             msg.textContent = "Login successful!";
             msg.style.color = "green";
             localStorage.setItem("token", token);
-            window.location.href = "dashboard.html"; // Redirect to the protected page
+            window.location.href = "/index.html"; // Redirect to the protected page
           } else {
             msg.textContent = token; // server error message
             msg.style.color = "red";
