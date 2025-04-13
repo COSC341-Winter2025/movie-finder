@@ -8,7 +8,15 @@ use sqlx::MySqlPool;
 use dotenv::dotenv;
 use bcrypt::{hash, DEFAULT_COST};
 use bcrypt::verify;
+use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation};
+use chrono::{Utc, Duration};
 
+// JWT secret key
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    exp: usize,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 struct MovieSearchResult {
