@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  db:
+    image: mysql:8.0
+    container_name: movie-db
+    environment:
+      MYSQL_ROOT_PASSWORD: pass123
+      MYSQL_DATABASE: movie_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  db_data:
