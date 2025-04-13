@@ -153,6 +153,29 @@ struct LoginData {
     password: String,
 }
 
+async fn login(
+    pool: web::Data<MySqlPool>,
+    form: web::Json<LoginData>,
+) -> HttpResponse {
+    let result = sqlx::query!(
+        "SELECT password FROM users WHERE username = ?",
+        form.username
+    )
+    .fetch_one(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(row) => {
+            if verify(&form.password, &row.password).unwrap() {
+                HttpResponse::Ok().body("Login success")
+            } else {
+                HttpResponse::Unauthorized().body("Invalid credentials")
+            }
+        }
+        Err(_) => HttpResponse::InternalServerError().body("Error fetching user"),
+    }
+}
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
