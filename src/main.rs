@@ -10,6 +10,8 @@ use bcrypt::{hash, DEFAULT_COST};
 use bcrypt::verify;
 use jsonwebtoken::{encode, decode, Header, EncodingKey, DecodingKey, Validation};
 use chrono::{Utc, Duration};
+use actix_files::NamedFile;
+use std::path::PathBuf;
 
 // JWT secret key
 #[derive(Debug, Serialize, Deserialize)]
@@ -251,6 +253,31 @@ fn verify_token(token: &str, secret: &str) -> Option<Claims> {
     .ok()
 }
 
+async fn dashboard(req: actix_web::HttpRequest) -> actix_web::Result<NamedFile> {
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or("secret".to_string());
+
+    // Get Authorization: Bearer <token>
+    let auth_header = req.headers().get("Authorization");
+
+    if let Some(header_value) = auth_header {
+        if let Ok(auth_str) = header_value.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+
+                // ✅ Verify JWT token
+                if verify_token(token, &jwt_secret).is_some() {
+                    let path: PathBuf = "./protected/index.html".parse().unwrap();
+                    return Ok(NamedFile::open(path)?);
+                }
+            }
+        }
+    }
+
+    // Invalid/missing token → show unauthorized.html
+    let path: PathBuf = "./protected/unauthorized.html".parse().unwrap();
+    Ok(NamedFile::open(path)?)
+}
+
 
 
 #[actix_web::main]
@@ -277,8 +304,8 @@ async fn main() -> std::io::Result<()> {
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
-            .route("/protected", web::get().to(protected))
-            // .service(Files::new("/static", "./static").show_files_listing())
+            .route("/dashboard", web::get().to(dashboard))
+            .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?
     .run()
