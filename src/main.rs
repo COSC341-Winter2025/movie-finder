@@ -3,7 +3,7 @@ use actix_files::Files;
 use serde::{Deserialize, Serialize};
 use std::env;
 use reqwest;
-use sqlx::mysql::MySqlPoolOptions;
+use sqlx::mysql::MySqlPoolOptions::MySqlPool;
 use dotenv::dotenv;
 
 
@@ -110,6 +110,31 @@ async fn get_movie_by_id(movie_id: web::Path<String>) -> impl Responder {
             Err(_) => HttpResponse::InternalServerError().body("Error parsing movie details"),
         },
         Err(_) => HttpResponse::InternalServerError().body("Error fetching movie details"),
+    }
+}
+
+#[derive(Deserialize)]
+struct SignupData {
+    username: String,
+    email: String,
+    password: String,
+}
+
+async fn signup(
+    pool: web::Data<MySqlPool>,
+    form: web::Json<SignupData>,
+) -> HttpResponse {
+    let result = sqlx::query!(
+        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+        form.username,
+        form.email,
+        form.password
+    )
+    .execute(pool.get_ref())
+    .await;
+    match result {
+        Ok(_) => HttpResponse::Ok().body("Signup success"),
+        Err(_) => HttpResponse::InternalServerError().body("Error creating user"),
     }
 }
 
