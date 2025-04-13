@@ -200,6 +200,7 @@ async fn main() -> std::io::Result<()> {
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
+            .route("/login", web::post().to(login))
             .service(Files::new("/static", "./static").show_files_listing())
     })
     .bind("127.0.0.1:5500")?

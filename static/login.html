@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
+    <!-- movie app css -->
+    <link rel="stylesheet" href="login.css" />
   </head>
   <body>
     <h2>Login</h2>
@@ -31,8 +33,10 @@
             body: JSON.stringify({ username, password }),
           });
 
-          const data = await response.json();
-          document.getElementById("login-message").innerText = data.message;
+          const msg = document.getElementById("login-message");
+          const text = await response.text();
+          msg.textContent = text;
+          msg.style.color = response.ok ? "green" : "red";
         });
     </script>
   </body>
