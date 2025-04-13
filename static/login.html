@@ -17,6 +17,8 @@
       <button id="submit">Login</button>
     </form>
     <p id="login-message"></p>
+    <p>Don’t have an account? <a href="/static/signup.html">Sign up here</a></p>
+
     <script>
       document
         .getElementById("login-form")
@@ -34,11 +36,15 @@
           });
 
           const msg = document.getElementById("login-message");
-          const text = await response.text();
-          msg.textContent = response.ok ? "Login successful!" : text;
-          msg.style.color = response.ok ? "green" : "red";
+          const token = await response.text();
           if (response.ok) {
-            localStorage.setItem("token", text);
+            msg.textContent = "Login successful!";
+            msg.style.color = "green";
+            localStorage.setItem("token", token);
+            window.location.href = "/protected/index.html"; // Redirect to the protected page
+          } else {
+            msg.textContent = token; // server error message
+            msg.style.color = "red";
           }
         });
     </script>
