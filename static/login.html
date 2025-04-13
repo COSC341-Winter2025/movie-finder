@@ -41,7 +41,17 @@
             msg.textContent = "Login successful!";
             msg.style.color = "green";
             localStorage.setItem("token", token);
-            window.location.href = "/dashboard"; // Redirect to the protected page
+            fetch("/dashboard", {
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+            })
+              .then((res) => res.text())
+              .then((html) => {
+                document.open();
+                document.write(html);
+                document.close();
+              });
           } else {
             msg.textContent = token; // server error message
             msg.style.color = "red";

@@ -94,9 +94,10 @@
       ❤️ Save to Favorites
     </button>
 
-    <script src="./static/script.js"></script>
+    <script src="/static/script.js"></script>
     <script>
       const token = localStorage.getItem("token");
+      console.log("Token used for /protected:", token);
 
       if (!token) {
         window.location.href = "/static/login.html";
@@ -107,6 +108,7 @@
           },
         })
           .then((res) => {
+            console.log("Protected response status:", res.status);
             if (!res.ok) {
               window.location.href = "/protected/unauthorized.html";
             } else {
@@ -114,6 +116,7 @@
             }
           })
           .then((username) => {
+            console.log("Logged in as:", username);
             document.getElementById(
               "username-display"
             ).innerText = `Welcome, ${username}!`;

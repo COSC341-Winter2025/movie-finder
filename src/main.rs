@@ -13,6 +13,7 @@ use chrono::{Utc, Duration};
 use actix_files::NamedFile;
 use std::path::PathBuf;
 use actix_web::HttpRequest;
+use actix_web::get;
 
 // JWT secret key
 #[derive(Debug, Serialize, Deserialize)]
@@ -222,6 +223,7 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
 
     if let Some(auth_value) = auth_header {
         if let Ok(auth_str) = auth_value.to_str() {
+            println!("Received Authorization header: {}", auth_str);
             if auth_str.starts_with("Bearer ") {
                 let token = &auth_str[7..];
                 let result = decode::<Claims>(
@@ -232,6 +234,7 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
 
                 match result {
                     Ok(token_data) => {
+                        println!("✅ Valid token for {}", token_data.claims.sub);
                         return HttpResponse::Ok()
                         .body(token_data.claims.sub.clone());
                     }
@@ -243,6 +246,38 @@ async fn protected(req: actix_web::HttpRequest) -> HttpResponse {
 
     HttpResponse::Unauthorized().body("Authorization header missing or malformed")
 }
+
+#[get("/protected")]
+async fn protected_api(req: HttpRequest) -> impl Responder {
+    let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    if let Some(auth_value) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_value.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                let result = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                match result {
+                    Ok(token_data) => {
+                        println!("✅ Token valid in /protected API: {}", token_data.claims.sub);
+                        return HttpResponse::Ok().body(token_data.claims.sub.clone());
+                    }
+                    Err(err) => {
+                        println!("❌ Invalid token in /protected: {:?}", err);
+                        return HttpResponse::Unauthorized().body("Invalid token");
+                    }
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Authorization header missing or malformed")
+}
+
 
 fn verify_token(token: &str, secret: &str) -> Option<Claims> {
     decode::<Claims>(
@@ -437,6 +472,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/favorites", web::get().to(get_favorites))
             .route("/api/add-favorite", web::post().to(add_favorite))
             .service(Files::new("/static", "./static").show_files_listing())
+            .service(protected_api)
             .route("/", web::get().to(|| async {
                 NamedFile::open("./static/index.html")
             }))
