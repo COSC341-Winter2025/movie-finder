@@ -7,6 +7,7 @@ use sqlx::mysql::MySqlPoolOptions;
 use sqlx::MySqlPool;
 use dotenv::dotenv;
 use bcrypt::{hash, DEFAULT_COST};
+use bcrypt::verify;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -145,6 +146,13 @@ async fn signup(
         Err(_) => HttpResponse::InternalServerError().body("Error creating user"),
     }
 }
+
+#[derive(Deserialize)]
+struct LoginData {
+    username: String,
+    password: String,
+}
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
