@@ -286,6 +286,47 @@ struct Favorite {
     poster: String,
 }
 
+async fn get_favorites(req: HttpRequest, db: web::Data<MySqlPool>) -> impl Responder {
+    let jwt_secret = env::var("JWT_SECRET").unwrap();
+
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                if let Ok(token_data) = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                ) {
+                    let username = token_data.claims.sub;
+
+                    // get user_id from username
+                    let user = sqlx::query!(
+                        "SELECT id FROM users WHERE username = ?",
+                        username
+                    )
+                    .fetch_one(db.get_ref())
+                    .await
+                    .unwrap();
+
+                    let favorites = sqlx::query_as!(
+                        Favorite,
+                        "SELECT imdb_id, title, year, poster FROM favorites WHERE user_id = ?",
+                        user.id
+                    )
+                    .fetch_all(db.get_ref())
+                    .await
+                    .unwrap();
+
+                    return HttpResponse::Ok().json(favorites);
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Invalid or missing token")
+}
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
