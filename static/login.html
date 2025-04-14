@@ -41,17 +41,18 @@
             msg.textContent = "Login successful!";
             msg.style.color = "green";
             localStorage.setItem("token", token);
-            fetch("/dashboard", {
-              headers: {
-                Authorization: "Bearer " + token,
-              },
-            })
-              .then((res) => res.text())
-              .then((html) => {
-                document.open();
-                document.write(html);
-                document.close();
-              });
+            // fetch("/dashboard", {
+            //   headers: {
+            //     Authorization: "Bearer " + token,
+            //   },
+            // })
+            //   .then((res) => res.text())
+            //   .then((html) => {
+            //     document.open();
+            //     document.write(html);
+            //     document.close();
+            //   });
+            window.location.href = "/dashboard";
           } else {
             msg.textContent = token; // server error message
             msg.style.color = "red";

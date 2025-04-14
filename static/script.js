@@ -128,28 +128,6 @@ function saveToFavorites() {
     .then((msg) => alert(msg));
 }
 
-function goToFavorites() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("You need to log in first.");
-    window.location.href = "/static/login.html";
-    return;
-  }
-
-  fetch("/protected", {
-    headers: {
-      Authorization: "Bearer " + token,
-    },
-  }).then((res) => {
-    if (res.ok) {
-      window.location.href = "/protected/favorite.html";
-    } else {
-      alert("Session expired or invalid token.");
-      window.location.href = "/static/login.html";
-    }
-  });
-}
-
 // cmd+shift+r if the page is not refreshing
 
 // // Event listener for the search box

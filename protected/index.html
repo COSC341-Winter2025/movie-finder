@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Movie Search Website</title>
     <!-- movie app css -->
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
     <!-- font awesome -->
     <link
       rel="stylesheet"
@@ -21,6 +21,9 @@
       <div class="logo">
         <div class="container">
           <p>Movie <span>Finder</span></p>
+        </div>
+        <div style="text-align: center; margin-top: 20px">
+          <button onclick="goToFavorites()">My Favorites ❤️</button>
         </div>
       </div>
       <p id="username-display" style="text-align: center; margin: 10px 0">
@@ -93,9 +96,6 @@
     <button id="fav-btn" style="display: none" onclick="saveToFavorites()">
       ❤️ Save to Favorites
     </button>
-    <div style="text-align: center; margin-top: 20px">
-      <button onclick="goToFavorites()">My Favorites ❤️</button>
-    </div>
 
     <script src="/static/script.js"></script>
     <script>
@@ -139,18 +139,7 @@
           return;
         }
 
-        fetch("/protected", {
-          headers: {
-            Authorization: "Bearer " + token,
-          },
-        }).then((res) => {
-          if (res.ok) {
-            window.location.href = "/protected/favorite.html";
-          } else {
-            alert("Session expired or invalid token.");
-            window.location.href = "/static/login.html";
-          }
-        });
+        window.location.href = "/favorite?token=" + encodeURIComponent(token);
       }
     </script>
   </body>
