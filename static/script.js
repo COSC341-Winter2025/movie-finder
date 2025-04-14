@@ -190,7 +190,7 @@ function toggleFavorite() {
 
 function updateFavButton() {
   const btn = document.getElementById("fav-btn");
-  btn.innerText = isFavorite ? "❤️" : "🤍";
+  btn.innerText = isFavorite ? "❤️ Liked" : "🤍 Like";
   btn.classList.remove("pulse");
   void btn.offsetWidth;
   btn.classList.add("pulse");
