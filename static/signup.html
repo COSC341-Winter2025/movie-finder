@@ -51,6 +51,8 @@
         if (response.ok) {
           msg.textContent = "Signup successful!";
           msg.style.color = "green";
+          // Redirect to login page
+          window.location.href = "/static/login.html";
         } else {
           const errorText = await response.text();
 
