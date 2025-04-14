@@ -1,18 +1,89 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;1,400&display=swap");
+
+:root {
+  --background-dark: #121212;
+  --card-dark: #1e1e1e;
+  --accent-color: #88ff00c2;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --border-color: #333333;
+}
+
 body {
-  font-family: Arial;
+  font-family: "Inter", Arial, sans-serif;
+  background-color: var(--background-dark);
+  color: var(--text-primary);
   max-width: 400px;
-  margin: 50px auto;
+  margin: 80px auto;
+  padding: 2rem;
+  background: var(--card-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
-label,
-input {
+
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+label {
+  margin-top: 10px;
   display: block;
-  margin-bottom: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
+
 input {
   width: 100%;
-  padding: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  margin-bottom: 15px;
+  transition: border-color 0.3s;
 }
+
+input:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+
 button {
-  padding: 8px 12px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  background-color: var(--accent-color);
+  color: var(--background-dark);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #a3ff55;
+}
+
+#signup-message {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
   margin-top: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+a:hover {
+  color: #ffffff;
 }

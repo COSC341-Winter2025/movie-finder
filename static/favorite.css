@@ -1,25 +1,37 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;1,400&display=swap");
+
+:root {
+  --background-dark: #121212;
+  --card-dark: #1e1e1e;
+  --secondary-dark: #252525;
+  --accent-color: #88ff00c2;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --border-color: #333333;
+}
+
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f3f4f6;
+  font-family: "Inter", sans-serif;
+  background-color: var(--background-dark);
+  color: var(--text-primary);
   margin: 0;
   padding: 0;
-  color: #333;
 }
 
 .container {
   max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-  background-color: #fff;
+  margin: 60px auto;
+  padding: 30px;
+  background-color: var(--card-dark);
   border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 2.2rem;
+  color: var(--accent-color);
   margin-bottom: 30px;
-  color: #2c3e50;
 }
 
 #favorites-container {
@@ -31,16 +43,16 @@ h1 {
 }
 
 .movie-card {
-  background-color: #ffffff;
+  background-color: var(--secondary-dark);
   border-radius: 10px;
   padding: 15px;
   width: 100%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease;
 }
 
 .movie-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
 }
 
 .movie-card img {
@@ -53,31 +65,36 @@ h1 {
 .movie-card h3 {
   font-size: 1.1rem;
   margin: 12px 0;
-  color: #34495e;
+  color: var(--text-primary);
 }
 
 button {
-  background-color: #ff5e5e;
-  color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
   cursor: pointer;
-  margin: 5px;
-  transition: background-color 0.2s ease;
+  margin: 8px 5px;
+  transition: background-color 0.25s ease;
+  font-weight: bold;
 }
 
-button:hover {
+button:first-of-type {
   background-color: #e74c3c;
+  color: white;
+}
+
+button:first-of-type:hover {
+  background-color: #c0392b;
 }
 
 button:last-of-type {
-  background-color: #3498db;
+  background-color: var(--accent-color);
+  color: var(--background-dark);
 }
 
 button:last-of-type:hover {
-  background-color: #2980b9;
+  background-color: #aaff66;
 }
 
 @media (max-width: 600px) {
@@ -86,11 +103,10 @@ button:last-of-type:hover {
   }
 
   h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 
   button {
-    width: 90%;
-    margin: 10px auto;
+    width: 100%;
   }
 }
