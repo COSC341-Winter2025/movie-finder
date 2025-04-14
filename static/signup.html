@@ -19,6 +19,11 @@
       <label for="confirm-password">Confirm Password:</label>
       <input type="password" id="confirm-password" required />
       <button id="submit">Sign Up</button>
+      <p>
+        Already have an account? <a href="/static/login.html">Login here</a>
+        <a>or</a>
+        <a href="/">Back to search </a>
+      </p>
     </form>
     <p id="signup-message"></p>
   </body>
@@ -49,10 +54,12 @@
 
         const msg = document.getElementById("signup-message");
         if (response.ok) {
-          msg.textContent = "Signup successful!";
+          msg.textContent = "Signup successful! Redirecting to login...";
           msg.style.color = "green";
           // Redirect to login page
-          window.location.href = "/static/login.html";
+          setTimeout(() => {
+            window.location.href = "/static/login.html";
+          }, 2000);
         } else {
           const errorText = await response.text();
 
@@ -66,5 +73,15 @@
           }
         }
       });
+    ["username", "email", "password"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", () => {
+        if (msg.textContent.includes("already exists")) {
+          msg.textContent = "Rechecking availability...";
+          msg.style.color = "gray";
+        } else {
+          msg.textContent = "";
+        }
+      });
+    });
   </script>
 </html>

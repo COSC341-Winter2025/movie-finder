@@ -46,7 +46,7 @@
               const card = document.createElement("div");
               card.classList.add("movie-card");
               card.innerHTML = `
-              <img src="${movie.poster}" style="height:200px" />
+              <img src="${movie.poster}" style="height:400px" />
               <h3>${movie.title} (${movie.year})</h3>
               <button onclick="removeFavorite('${movie.imdb_id}')">💔 Remove</button>
             `;

@@ -17,7 +17,11 @@
       <button id="submit">Login</button>
     </form>
     <p id="login-message"></p>
-    <p>Don’t have an account? <a href="/static/signup.html">Sign up here</a></p>
+    <p>
+      Don’t have an account? <a href="/static/signup.html">Sign up here</a>
+      <a>or</a>
+      <a href="/">Back to search </a>
+    </p>
 
     <script>
       document
@@ -38,7 +42,7 @@
           const msg = document.getElementById("login-message");
           const token = await response.text();
           if (response.ok) {
-            msg.textContent = "Login successful!";
+            msg.textContent = "Login successful! Redirecting to dashboard...";
             msg.style.color = "green";
             localStorage.setItem("token", token);
             // fetch("/dashboard", {
@@ -52,7 +56,10 @@
             //     document.write(html);
             //     document.close();
             //   });
-            window.location.href = "/dashboard";
+
+            setTimeout(() => {
+              window.location.href = "/dashboard";
+            }, 2000);
           } else {
             msg.textContent = token; // server error message
             msg.style.color = "red";
