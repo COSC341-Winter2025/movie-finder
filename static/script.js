@@ -49,6 +49,7 @@ function displayMovieList(movies) {
   loadMovieDetails();
 }
 
+let currentMovie = null;
 function loadMovieDetails() {
   const searchListMovies = searchList.querySelectorAll(".search-list-item");
   searchListMovies.forEach((movie) => {
@@ -58,6 +59,7 @@ function loadMovieDetails() {
       movieSearchBox.value = "";
       const res = await fetch(`/movie/${movie.dataset.id}`);
       const data = await res.json();
+      currentMovie = data;
       //console.log(data);
       displayMovieDetails(data);
     });
@@ -108,7 +110,7 @@ function saveToFavorites() {
     return;
   }
 
-  const movie = currentMovie; // wherever you store selected movie info
+  const movie = currentMovie;
   fetch("/api/add-favorite", {
     method: "POST",
     headers: {
@@ -124,6 +126,28 @@ function saveToFavorites() {
   })
     .then((res) => res.text())
     .then((msg) => alert(msg));
+}
+
+function goToFavorites() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("You need to log in first.");
+    window.location.href = "/static/login.html";
+    return;
+  }
+
+  fetch("/protected", {
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  }).then((res) => {
+    if (res.ok) {
+      window.location.href = "/protected/favorite.html";
+    } else {
+      alert("Session expired or invalid token.");
+      window.location.href = "/static/login.html";
+    }
+  });
 }
 
 // cmd+shift+r if the page is not refreshing

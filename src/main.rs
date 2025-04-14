@@ -439,6 +439,58 @@ async fn add_favorite(
     }
 }
 
+async fn remove_favorite(
+    req: HttpRequest,
+    path: web::Path<String>,
+    db: web::Data<MySqlPool>,
+) -> impl Responder {
+    let imdb_id = path.into_inner();
+    let jwt_secret = env::var("JWT_SECRET").unwrap();
+
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+
+                let token_data = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                if let Ok(claims) = token_data {
+                    let username = claims.claims.sub;
+
+                    let user = sqlx::query!("SELECT id FROM users WHERE username = ?", username)
+                        .fetch_one(db.get_ref())
+                        .await;
+
+                    if let Ok(user) = user {
+                        let result = sqlx::query!(
+                            "DELETE FROM favorites WHERE user_id = ? AND imdb_id = ?",
+                            user.id,
+                            imdb_id
+                        )
+                        .execute(db.get_ref())
+                        .await;
+
+                        return match result {
+                            Ok(_) => HttpResponse::Ok().body("Removed from favorites"),
+                            Err(e) => {
+                                println!("Delete error: {:?}", e);
+                                HttpResponse::InternalServerError().body("Failed to remove")
+                            }
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Unauthorized")
+}
+
+
 
 
 #[actix_web::main]
@@ -471,6 +523,7 @@ async fn main() -> std::io::Result<()> {
             }))
             .route("/api/favorites", web::get().to(get_favorites))
             .route("/api/add-favorite", web::post().to(add_favorite))
+            .route("/api/favorites/{imdb_id}", web::delete().to(remove_favorite))
             .service(Files::new("/static", "./static").show_files_listing())
             .service(protected_api)
             .route("/", web::get().to(|| async {

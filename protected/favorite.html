@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Favorites</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>My Favorite Movies</h1>
+      <div id="favorites-container"></div>
+      <button onclick="logout()">Logout</button>
+      <button onclick="window.location.href='/static/index.html'">
+        🔍 Back to Search
+      </button>
+    </div>
+
+    <script>
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/static/login.html";
+      }
+
+      function logout() {
+        localStorage.removeItem("token");
+        window.location.href = "/static/login.html";
+      }
+
+      function loadFavorites() {
+        fetch("/api/favorites", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        })
+          .then((res) => res.json())
+          .then((movies) => {
+            const container = document.getElementById("favorites-container");
+            container.innerHTML = "";
+
+            if (movies.length === 0) {
+              container.innerHTML = "<p>No favorites yet.</p>";
+              return;
+            }
+
+            movies.forEach((movie) => {
+              const card = document.createElement("div");
+              card.classList.add("movie-card");
+              card.innerHTML = `
+              <img src="${movie.poster}" style="height:200px" />
+              <h3>${movie.title} (${movie.year})</h3>
+              <button onclick="removeFavorite('${movie.imdb_id}')">💔 Remove</button>
+            `;
+              container.appendChild(card);
+            });
+          });
+      }
+
+      function removeFavorite(imdbId) {
+        fetch(`/api/favorites/${imdbId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        })
+          .then((res) => res.text())
+          .then((msg) => {
+            alert(msg);
+            loadFavorites(); // refresh
+          });
+      }
+
+      loadFavorites();
+    </script>
+  </body>
+</html>
