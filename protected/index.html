@@ -19,21 +19,27 @@
     <div class="wrapper">
       <!-- logo -->
       <div class="logo">
-        <div class="container">
+        <!-- <div class="container">
           <p>Movie <span>Finder</span></p>
+        </div> -->
+        <div class="navbar">
+          <div class="logo-text">Movie <span>Finder</span></div>
+          <div class="nav-buttons">
+            <button onclick="goToFavorites()">❤️ My Favorites</button>
+            <button onclick="logout()">🚪 Logout</button>
+          </div>
         </div>
-        <div style="text-align: center; margin-top: 20px">
+        <!-- <div style="text-align: center; margin-top: 20px">
           <button onclick="goToFavorites()">My Favorites ❤️</button>
-        </div>
+        </div> -->
       </div>
       <p id="username-display" style="text-align: center; margin: 10px 0">
         Loading username...
       </p>
 
-      <div style="text-align: center; margin-top: 30px">
-        <button onclick="goBackToDashboard()">Back to Dashboard</button>
+      <!-- <div style="text-align: center; margin-top: 30px">
         <button onclick="logout()">Logout</button>
-      </div>
+      </div> -->
 
       <!--  end of logo -->
       <!-- navbar -->
@@ -93,7 +99,15 @@
       <!-- end of result container -->
     </div>
     <!-- movie app js -->
-    <button id="fav-btn" style="display: none" onclick="saveToFavorites()">
+    <!-- <button id="fav-btn" style="display: none" onclick="saveToFavorites()">
+      ❤️ Save to Favorites
+    </button> -->
+    <button
+      id="fav-btn"
+      class="fav-toggle"
+      style="display: none"
+      onclick="toggleFavorite()"
+    >
       ❤️ Save to Favorites
     </button>
 

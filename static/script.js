@@ -61,12 +61,26 @@ function loadMovieDetails() {
       const data = await res.json();
       currentMovie = data;
       //console.log(data);
+
       displayMovieDetails(data);
     });
   });
 }
+async function checkFavoriteStatus(imdbID) {
+  const token = localStorage.getItem("token");
+  if (!token) return false;
 
-function displayMovieDetails(movie) {
+  const res = await fetch("/api/favorites", {
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  });
+
+  const favorites = await res.json();
+  return favorites.some((movie) => movie.imdb_id === imdbID);
+}
+
+async function displayMovieDetails(movie) {
   resultGrid.innerHTML = `
   <div class="movie-poster">
               <img src="${
@@ -91,6 +105,10 @@ function displayMovieDetails(movie) {
               </p>
             </div>
             `;
+  const favBtn = document.getElementById("fav-btn");
+  favBtn.style.display = "inline-block";
+  isFavorite = await checkFavoriteStatus(movie.imdbID);
+  updateFavButton();
 }
 
 // Wait for DOM to be fully loaded before adding event listeners
@@ -126,6 +144,56 @@ function saveToFavorites() {
   })
     .then((res) => res.text())
     .then((msg) => alert(msg));
+}
+
+let isFavorite = false;
+
+function toggleFavorite() {
+  const token = localStorage.getItem("token");
+  if (!token || !currentMovie) return;
+
+  if (!isFavorite) {
+    // Add to favorites
+    fetch("/api/add-favorite", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({
+        imdb_id: currentMovie.imdbID,
+        title: currentMovie.Title,
+        year: currentMovie.Year,
+        poster: currentMovie.Poster,
+      }),
+    })
+      .then((res) => res.text())
+      .then(() => {
+        isFavorite = true;
+        updateFavButton();
+      });
+  } else {
+    // Remove from favorites
+    fetch(`/api/favorites/${currentMovie.imdbID}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then((res) => res.text())
+      .then(() => {
+        isFavorite = false;
+        updateFavButton();
+      });
+  }
+}
+
+function updateFavButton() {
+  const btn = document.getElementById("fav-btn");
+  btn.innerText = isFavorite ? "❤️" : "🤍";
+  btn.classList.remove("pulse");
+  void btn.offsetWidth;
+  btn.classList.add("pulse");
 }
 
 // cmd+shift+r if the page is not refreshing
