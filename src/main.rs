@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use actix_web::HttpRequest;
 use actix_web::get;
 
-// JWT secret key
+// construct the user's payload
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
     sub: String,
@@ -136,9 +136,27 @@ struct SignupData {
 }
 
 async fn signup(
-    pool: web::Data<MySqlPool>,
-    form: web::Json<SignupData>,
+    pool: web::Data<MySqlPool>,  // Actix-Web shared DB connection
+    form: web::Json<SignupData>, // JSON body from the client with username, email & password
 ) -> HttpResponse {
+
+    // Check if the username already exists 
+    let exists = sqlx::query!(
+        "SELECT id FROM users WHERE username = ? OR email = ?",
+        form.username,
+        form.email
+    )
+    .fetch_optional(pool.get_ref())
+    .await;
+    match exists {
+        Ok(Some(_)) => {
+            return HttpResponse::BadRequest().body("Username or email already exists");
+        }
+        Ok(None) => {} // No duplicates, continue
+        Err(_) => {
+            return HttpResponse::InternalServerError().body("Database error during validation");
+        }
+    }
     // Hash the password
     let hashed_password = match hash(&form.password, DEFAULT_COST) {
         Ok(hash) => hash,
@@ -166,33 +184,35 @@ struct LoginData {
 }
 
 async fn login(
-    pool: web::Data<MySqlPool>,
-    form: web::Json<LoginData>,
+    pool: web::Data<MySqlPool>, // Actix-Web shared DB connection
+    form: web::Json<LoginData>, // JSON body from the client with username & password
 ) -> HttpResponse {
     let result = sqlx::query!(
         "SELECT password FROM users WHERE username = ?",
         form.username
     )
-    .fetch_one(pool.get_ref())
+    .fetch_one(pool.get_ref()) // return an error if the user is not found
     .await;
 
     match result {
         Ok(row) => {
-            let is_valid = verify(&form.password, &row.password).unwrap_or(false);
+            let is_valid = verify(&form.password, &row.password).unwrap_or(false); // Check if the password matches
 
             if is_valid {
-                let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set in .env");
+                let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set in .env"); //gererate JWT secret from environment variable
 
                 let expiration = Utc::now()
                     .checked_add_signed(Duration::days(1))
                     .expect("valid timestamp")
                     .timestamp() as usize;
 
+                // construct the user's payload
                 let claims = Claims {
                     sub: form.username.clone(),
                     exp: expiration,
                 };
-
+                
+                // Encode the JWT token
                 let token = encode(
                     &Header::default(),
                     &claims,
