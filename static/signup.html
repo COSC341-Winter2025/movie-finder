@@ -57,7 +57,9 @@
           msg.textContent = "Signup successful! Redirecting to login...";
           msg.style.color = "green";
           // Redirect to login page
-          window.location.href = "/static/login.html";
+          setTimeout(() => {
+            window.location.href = "/static/login.html";
+          }, 2000);
         } else {
           const errorText = await response.text();
 
@@ -71,5 +73,15 @@
           }
         }
       });
+    ["username", "email", "password"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", () => {
+        if (msg.textContent.includes("already exists")) {
+          msg.textContent = "Rechecking availability...";
+          msg.style.color = "gray";
+        } else {
+          msg.textContent = "";
+        }
+      });
+    });
   </script>
 </html>
