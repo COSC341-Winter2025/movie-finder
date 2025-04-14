@@ -439,6 +439,96 @@ async fn add_favorite(
     }
 }
 
+async fn remove_favorite(
+    req: HttpRequest,
+    path: web::Path<String>,
+    db: web::Data<MySqlPool>,
+) -> impl Responder {
+    let imdb_id = path.into_inner();
+    let jwt_secret = env::var("JWT_SECRET").unwrap();
+
+    if let Some(auth_header) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+
+                let token_data = decode::<Claims>(
+                    token,
+                    &DecodingKey::from_secret(jwt_secret.as_bytes()),
+                    &Validation::default(),
+                );
+
+                if let Ok(claims) = token_data {
+                    let username = claims.claims.sub;
+
+                    let user = sqlx::query!("SELECT id FROM users WHERE username = ?", username)
+                        .fetch_one(db.get_ref())
+                        .await;
+
+                    if let Ok(user) = user {
+                        let result = sqlx::query!(
+                            "DELETE FROM favorites WHERE user_id = ? AND imdb_id = ?",
+                            user.id,
+                            imdb_id
+                        )
+                        .execute(db.get_ref())
+                        .await;
+
+                        return match result {
+                            Ok(_) => HttpResponse::Ok().body("Removed from favorites"),
+                            Err(e) => {
+                                println!("Delete error: {:?}", e);
+                                HttpResponse::InternalServerError().body("Failed to remove")
+                            }
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    HttpResponse::Unauthorized().body("Unauthorized")
+}
+
+#[get("/favorite")]
+async fn favorite_page(req: HttpRequest) -> actix_web::Result<NamedFile> {
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or("secret".to_string());
+    
+    println!("🔐 Requesting /favorite");
+    
+    // First check Authorization header
+    if let Some(header_value) = req.headers().get("Authorization") {
+        if let Ok(auth_str) = header_value.to_str() {
+            if auth_str.starts_with("Bearer ") {
+                let token = &auth_str[7..];
+                
+                if let Some(claims) = verify_token(token, &jwt_secret) {
+                    println!("✅ Valid token for {}", claims.sub);
+                    let path: PathBuf = "./protected/favorite.html".parse().unwrap();
+                    return Ok(NamedFile::open(path)?);
+                }
+            }
+        }
+    }
+    
+    // If no valid Authorization header, check query parameters
+    if let Some(query) = req.uri().query() {
+        if let Some(token) = web::Query::<std::collections::HashMap<String, String>>::from_query(query)
+            .ok()
+            .and_then(|q| q.get("token").cloned())
+        {
+            if let Some(claims) = verify_token(&token, &jwt_secret) {
+                println!("✅ Valid token from query for {}", claims.sub);
+                let path: PathBuf = "./protected/favorite.html".parse().unwrap();
+                return Ok(NamedFile::open(path)?);
+            }
+        }
+    }
+
+    println!("⚠️ Unauthorized access to /favorite");
+    Ok(NamedFile::open("./protected/unauthorized.html")?)
+}
+
 
 
 #[actix_web::main]
@@ -471,11 +561,15 @@ async fn main() -> std::io::Result<()> {
             }))
             .route("/api/favorites", web::get().to(get_favorites))
             .route("/api/add-favorite", web::post().to(add_favorite))
+            .route("/api/favorites/{imdb_id}", web::delete().to(remove_favorite))
+            //.route("/favorite", web::get().to(favorite_page))
             .service(Files::new("/static", "./static").show_files_listing())
             .service(protected_api)
+            .service(favorite_page)
             .route("/", web::get().to(|| async {
                 NamedFile::open("./static/index.html")
             }))
+            
             
     })
     .bind("127.0.0.1:5500")?
