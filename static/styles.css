@@ -368,6 +368,21 @@ img {
   margin: 0.7rem 0.7rem 0 0;
 }
 
+#username-display {
+  text-align: center;
+  margin: 1.5rem auto;
+  padding: 0.6rem 1.2rem;
+  background-color: var(--card-dark);
+  color: var(--accent-color);
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
 @media (max-width: 450px) {
   .logo p {
     font-size: 1.4rem;
