@@ -52,7 +52,7 @@
 
         const msg = document.getElementById("signup-message");
         if (response.ok) {
-          msg.textContent = "Signup successful!";
+          msg.textContent = "Signup successful! Redirecting to login...";
           msg.style.color = "green";
           // Redirect to login page
           window.location.href = "/static/login.html";
