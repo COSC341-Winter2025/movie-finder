@@ -44,6 +44,10 @@
   background-color: var(--accent-color);
   color: var(--background-dark);
 }
+.fav-btn-container {
+  text-align: center;
+  margin-top: 1.5rem;
+}
 .fav-toggle {
   font-size: 2.5rem;
   background: none;
