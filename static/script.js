@@ -168,9 +168,10 @@ function toggleFavorite() {
       }),
     })
       .then((res) => res.text())
-      .then(() => {
+      .then((message) => {
         isFavorite = true;
         updateFavButton();
+        alert(message);
       });
   } else {
     // Remove from favorites
@@ -181,9 +182,10 @@ function toggleFavorite() {
       },
     })
       .then((res) => res.text())
-      .then(() => {
+      .then((message) => {
         isFavorite = false;
         updateFavButton();
+        alert(message);
       });
   }
 }
