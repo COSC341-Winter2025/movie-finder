@@ -121,31 +121,6 @@ if (localStorage.getItem("token")) {
   document.getElementById("fav-btn").style.display = "inline-block";
 }
 
-function saveToFavorites() {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("You must be logged in to save favorites.");
-    return;
-  }
-
-  const movie = currentMovie;
-  fetch("/api/add-favorite", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token,
-    },
-    body: JSON.stringify({
-      imdb_id: movie.imdbID,
-      title: movie.Title,
-      year: movie.Year,
-      poster: movie.Poster,
-    }),
-  })
-    .then((res) => res.text())
-    .then((msg) => alert(msg));
-}
-
 let isFavorite = false;
 
 function toggleFavorite() {
@@ -168,9 +143,10 @@ function toggleFavorite() {
       }),
     })
       .then((res) => res.text())
-      .then(() => {
+      .then((message) => {
         isFavorite = true;
         updateFavButton();
+        alert(message);
       });
   } else {
     // Remove from favorites
@@ -181,9 +157,10 @@ function toggleFavorite() {
       },
     })
       .then((res) => res.text())
-      .then(() => {
+      .then((message) => {
         isFavorite = false;
         updateFavButton();
+        alert(message);
       });
   }
 }

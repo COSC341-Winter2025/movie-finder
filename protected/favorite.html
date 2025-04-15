@@ -45,11 +45,44 @@
             movies.forEach((movie) => {
               const card = document.createElement("div");
               card.classList.add("movie-card");
+              card.setAttribute("data-id", movie.imdb_id);
               card.innerHTML = `
               <img src="${movie.poster}" style="height:400px" />
               <h3>${movie.title} (${movie.year})</h3>
               <button onclick="removeFavorite('${movie.imdb_id}')">💔 Remove</button>
             `;
+              card.addEventListener("click", async () => {
+                const imdbID = card.getAttribute("data-id");
+                const res = await fetch(`/movie/${imdbID}`);
+                const movie = await res.json();
+
+                const container = document.getElementById(
+                  "favorites-container"
+                );
+                container.innerHTML = `
+                    <div class="movie-poster">
+                      <img src="${movie.Poster}" style="height:400px" />
+                    </div>
+                    <div class="movie-info">
+                    <h3 class="movie-title">${movie.Title}</h3>
+                    <ul class="movie-misc-info">
+                      <li class="year">Year: ${movie.Year}</li>
+
+                      <li class="rated">Rating: ${movie.imdbRating}</li>
+                      <li class="released">Released: ${movie.Released}</li>
+                    </ul>
+                    <p class="genre"><b>Genre: ${movie.Genre}</b></p>
+                    <p class="writer"><b>Writer: ${movie.Writer}</b></p>
+                    <p class="actors"><b>Actors: ${movie.Actors}</b></p>
+                    <p class="plot"><b>Plot: ${movie.Plot}</b></p>
+                    <p class="language"><b>Language: ${movie.Language}</b></p>
+                    <p class="awards">
+                      <b><i class="fas fa-award"></i>${movie.Awards}</b>
+                    </p>
+                    <button onclick="loadFavorites()">🔙 Back to Favorites</button
+                  </div>
+                  `;
+              });
               container.appendChild(card);
             });
           });
