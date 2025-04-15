@@ -530,20 +530,6 @@ async fn favorite_page(req: HttpRequest) -> actix_web::Result<NamedFile> {
             }
         }
     }
-    
-    // If no valid Authorization header, check query parameters
-    if let Some(query) = req.uri().query() {
-        if let Some(token) = web::Query::<std::collections::HashMap<String, String>>::from_query(query)
-            .ok()
-            .and_then(|q| q.get("token").cloned())
-        {
-            if let Some(claims) = verify_token(&token, &jwt_secret) {
-                println!("✅ Valid token from query for {}", claims.sub);
-                let path: PathBuf = "./protected/favorite.html".parse().unwrap();
-                return Ok(NamedFile::open(path)?);
-            }
-        }
-    }
 
     println!("⚠️ Unauthorized access to /favorite");
     Ok(NamedFile::open("./protected/unauthorized.html")?)
@@ -570,13 +556,15 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            //.route("/", web::get().to(index))  
             .route("/movies/{movie_name}", web::get().to(search_movies))
             .route("/movie/{id}", web::get().to(get_movie_by_id))
             .route("/signup", web::post().to(signup))
             .route("/login", web::post().to(login))
             .route("/dashboard", web::get().to(|| async {
                 NamedFile::open("./protected/index.html")
+            }))
+            .route("/favorite", web::get().to(|| async {
+                NamedFile::open("./protected/favorite.html")
             }))
             .route("/api/favorites", web::get().to(get_favorites))
             .route("/api/add-favorite", web::post().to(add_favorite))
