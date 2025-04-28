@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/ecf2d824-9204-4a0e-92ff-f987aa0dc9fc
+
 ## **Movie Finder Website (Rust)**
 ### **Project Proposal**
 
